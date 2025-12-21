@@ -1,0 +1,122 @@
+// ============================================================
+// tb_Processor.v - Comprehensive Stress Test
+// Optimized for integrated system validation
+// ============================================================
+
+`timescale 1ns / 1ps
+
+module tb_Processor;
+
+    reg         clk;
+    reg         rst_n;
+    reg         INTR_IN;
+    reg  [7:0]  INPUT_PORT_PINS;
+    wire [7:0]  OUTPUT_PORT_PINS;
+
+    Processor DUT (
+        .clk             (clk),
+        .rst_n           (rst_n),
+        .INTR_IN         (INTR_IN),
+        .INPUT_PORT_PINS (INPUT_PORT_PINS),
+        .OUTPUT_PORT_PINS(OUTPUT_PORT_PINS)
+    );
+
+    initial begin
+        clk = 0;
+        forever #10 clk = ~clk; // 50 MHz
+    end
+
+    integer pass, fail;
+    
+    task check_mem;
+        input [7:0] addr;
+        input [7:0] expected;
+        input [8*20:1] name;
+        begin
+            if (DUT.DMEM.mem[addr] === expected) begin
+                $display("  [PASS] %s: M[0x%h]=0x%h", name, addr, DUT.DMEM.mem[addr]);
+                pass = pass + 1;
+            end else begin
+                $display("  [FAIL] %s: M[0x%h]=0x%h (Exp 0x%h)", name, addr, DUT.DMEM.mem[addr], expected);
+                fail = fail + 1;
+            end
+        end
+    endtask
+
+    // Debug Trace
+    initial begin
+        $monitor("T=%10t PC=%h ID_I=%h ST=%1d EX_OP=%h R0=%h R1=%h R2=%h R3=%h BT=%b MJ=%b PS=%b EN=%b", 
+                 $time, DUT.if_pc_out, DUT.id_instruction, DUT.CU.Current_State, DUT.EU.Opcode, 
+                 DUT.RegFile.regs[0], DUT.RegFile.regs[1], DUT.RegFile.regs[2], DUT.RegFile.regs[3],
+                 DUT.ex_branch_taken, DUT.mem_jwsp, DUT.final_pc_src, DUT.final_pc_write_en);
+    end
+
+    initial begin
+        pass = 0;
+        fail = 0;
+        
+        rst_n = 0;
+        INTR_IN = 0;
+        INPUT_PORT_PINS = 8'h00;
+        
+        #100;
+        rst_n = 1;
+        $display("\n========================================================");
+        $display("     ELC3030 Processor Comprehensive Verification");
+        $display("========================================================\n");
+
+        // --- PHASE 1: Loop & Calculation Verification ---
+        $display("  Waiting for Loop Completion...");
+        wait(DUT.if_pc_out == 8'h0D);
+        $display("  [INFO] Loop Exit detected at T=%t", $time);
+        
+        // Wait for program to reach Subroutine phase
+        wait(DUT.if_pc_out == 8'h20);
+        check_mem(8'h80, 8'h28, "Loop (5*2*2*2=0x28)");
+
+        // --- PHASE 2: Interrupt Verification ---
+        $display("\n  Triggering External Interrupt...");
+        @(negedge clk);
+        INTR_IN = 1; 
+        #200; // Hold for 10 cycles
+        INTR_IN = 0;
+        
+        wait(DUT.DMEM.mem[8'h60] == 8'hAA);
+        $display("  [PASS] ISR Execution: M[0x60]=0xAA detected.");
+        pass = pass + 1;
+
+        // --- PHASE 3: Subroutine Verification ---
+        $display("\n  Waiting for Subroutine Completion...");
+        wait(OUTPUT_PORT_PINS == 8'h77);
+        $display("  [PASS] Subroutine Payload: Output Port = 0x77 detected.");
+        pass = pass + 1;
+
+        // --- PHASE 4: Final Program Completion ---
+        $display("\n  Waiting for Program Done Marker...");
+        wait(DUT.RegFile.regs[0] == 8'hDD);
+        $display("  [INFO] Program Completion Marker (R0=0xDD) detected.");
+        
+        #1000;
+
+        $display("\n========================================================");
+        $display("   FINAL REPORT: %0d TESTS PASSED, %0d FAILED", pass, fail);
+        if (fail == 0) begin
+            $display("   [SUCCESS] ALL PROCESSOR SUBSYSTEMS VERIFIED!");
+            $display("   Verification covers: Hazards, Multi-cycle, Loops,");
+            $display("   Conditional Jumps, CALL/RET, and Interrupts.");
+        end else begin
+            $display("   [FAILURE] %0d SUBSYSTEM ERRORS DETECTED.", fail);
+        end
+        $display("========================================================\n");
+        
+        $finish;
+    end
+    
+    // Timeout Guard
+    initial begin
+        #50000000; // 50us
+        $display("\nERROR: TIMEOUT! Processor stuck at PC=%h", DUT.if_pc_out);
+        $finish;
+    end
+
+endmodule

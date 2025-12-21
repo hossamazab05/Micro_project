@@ -1,0 +1,428 @@
+m255
+K4
+z2
+13
+!s112 1.1
+!i10d 8192
+!i10e 25
+!i10f 100
+cModel Technology
+Z0 dC:/Users/LENOVO/Desktop/microprocessor_new/final_project
+vCCR
+Z1 !s110 1766346286
+!i10b 1
+!s100 >AbXVdBS<0lG9O6di9MMI0
+I]VV7WBZmB]c<dP1824>410
+Z2 VDg1SIo80bB@j0V0VzS_@n1
+R0
+w1766250713
+8C:/Users/LENOVO/Desktop/microprocessor_new/final_project/rtl/CCR.v
+FC:/Users/LENOVO/Desktop/microprocessor_new/final_project/rtl/CCR.v
+L0 7
+Z3 OV;L;10.5b;63
+r1
+!s85 0
+31
+Z4 !s108 1766346286.000000
+!s107 C:/Users/LENOVO/Desktop/microprocessor_new/final_project/rtl/CCR.v|
+!s90 -reportprogress|300|-work|work|-stats=none|C:/Users/LENOVO/Desktop/microprocessor_new/final_project/rtl/CCR.v|
+!i113 1
+Z5 o-work work
+Z6 tCvgOpt 0
+n@c@c@r
+vControlUnit
+Z7 !s110 1766346285
+!i10b 1
+!s100 X:X;FZ21nVazeF]3GhMkZ2
+ImaU?>FZFmNoE<7XaeZW3a3
+R2
+R0
+w1766338069
+8C:/Users/LENOVO/Desktop/microprocessor_new/final_project/rtl/ControlUnit.v
+FC:/Users/LENOVO/Desktop/microprocessor_new/final_project/rtl/ControlUnit.v
+L0 7
+R3
+r1
+!s85 0
+31
+Z8 !s108 1766346285.000000
+!s107 C:/Users/LENOVO/Desktop/microprocessor_new/final_project/rtl/ControlUnit.v|
+!s90 -reportprogress|300|-work|work|-stats=none|C:/Users/LENOVO/Desktop/microprocessor_new/final_project/rtl/ControlUnit.v|
+!i113 1
+R5
+R6
+n@control@unit
+vControlUnit_Decoder
+R7
+!i10b 1
+!s100 i^Q4OfhR_zLPzBl246Mm]0
+IM>o@<[HJnR7@P_IQ24DA22
+R2
+R0
+w1766325126
+8C:/Users/LENOVO/Desktop/microprocessor_new/final_project/rtl/ControlUnit_Decoder.v
+FC:/Users/LENOVO/Desktop/microprocessor_new/final_project/rtl/ControlUnit_Decoder.v
+L0 7
+R3
+r1
+!s85 0
+31
+R8
+!s107 C:/Users/LENOVO/Desktop/microprocessor_new/final_project/rtl/ControlUnit_Decoder.v|
+!s90 -reportprogress|300|-work|work|-stats=none|C:/Users/LENOVO/Desktop/microprocessor_new/final_project/rtl/ControlUnit_Decoder.v|
+!i113 1
+R5
+R6
+n@control@unit_@decoder
+vDataMemory
+R7
+!i10b 1
+!s100 <610V@HnYH9=VNR@2?XnA1
+IhP1SD1SM7M>fE6Bajb84^3
+R2
+R0
+w1766322212
+8C:/Users/LENOVO/Desktop/microprocessor_new/final_project/rtl/DataMemory.v
+FC:/Users/LENOVO/Desktop/microprocessor_new/final_project/rtl/DataMemory.v
+L0 7
+R3
+r1
+!s85 0
+31
+R8
+!s107 C:/Users/LENOVO/Desktop/microprocessor_new/final_project/rtl/DataMemory.v|
+!s90 -reportprogress|300|-work|work|-stats=none|C:/Users/LENOVO/Desktop/microprocessor_new/final_project/rtl/DataMemory.v|
+!i113 1
+R5
+R6
+n@data@memory
+vEX_MEM_Register
+R7
+!i10b 1
+!s100 K]6c_JR6eCE0TK24B5n`I1
+IFQ;O@NB;>2Nj=n1R6ekQd1
+R2
+R0
+w1766279723
+8C:/Users/LENOVO/Desktop/microprocessor_new/final_project/rtl/EX_MEM_Register.v
+FC:/Users/LENOVO/Desktop/microprocessor_new/final_project/rtl/EX_MEM_Register.v
+L0 7
+R3
+r1
+!s85 0
+31
+R8
+!s107 C:/Users/LENOVO/Desktop/microprocessor_new/final_project/rtl/EX_MEM_Register.v|
+!s90 -reportprogress|300|-work|work|-stats=none|C:/Users/LENOVO/Desktop/microprocessor_new/final_project/rtl/EX_MEM_Register.v|
+!i113 1
+R5
+R6
+n@e@x_@m@e@m_@register
+vExecutionUnit
+R7
+!i10b 1
+!s100 ;9J^>Aa5f;]<4cF8m1Wj70
+I?FzKz8B@IobBR=L_aS:fc3
+R2
+R0
+w1766322106
+8C:/Users/LENOVO/Desktop/microprocessor_new/final_project/rtl/ExecutionUnit.v
+FC:/Users/LENOVO/Desktop/microprocessor_new/final_project/rtl/ExecutionUnit.v
+L0 6
+R3
+r1
+!s85 0
+31
+R8
+!s107 C:/Users/LENOVO/Desktop/microprocessor_new/final_project/rtl/ExecutionUnit.v|
+!s90 -reportprogress|300|-work|work|-stats=none|C:/Users/LENOVO/Desktop/microprocessor_new/final_project/rtl/ExecutionUnit.v|
+!i113 1
+R5
+R6
+n@execution@unit
+vForwardingUnit
+R7
+!i10b 1
+!s100 X2fG]KaQceH]1RkJhP=3=3
+InhZ;C`cGS>YY>KEMhWo=m3
+R2
+R0
+w1766278433
+8C:/Users/LENOVO/Desktop/microprocessor_new/final_project/rtl/ForwardingUnit.v
+FC:/Users/LENOVO/Desktop/microprocessor_new/final_project/rtl/ForwardingUnit.v
+L0 7
+R3
+r1
+!s85 0
+31
+R8
+!s107 C:/Users/LENOVO/Desktop/microprocessor_new/final_project/rtl/ForwardingUnit.v|
+!s90 -reportprogress|300|-work|work|-stats=none|C:/Users/LENOVO/Desktop/microprocessor_new/final_project/rtl/ForwardingUnit.v|
+!i113 1
+R5
+R6
+n@forwarding@unit
+vHazardDetectionUnit
+R7
+!i10b 1
+!s100 FQdLfZzH:g>E1ZCkedCM32
+ILM2`efdalDmflm^iFI2NZ3
+R2
+R0
+w1766319795
+8C:/Users/LENOVO/Desktop/microprocessor_new/final_project/rtl/HazardDetectionUnit.v
+FC:/Users/LENOVO/Desktop/microprocessor_new/final_project/rtl/HazardDetectionUnit.v
+L0 7
+R3
+r1
+!s85 0
+31
+R8
+!s107 C:/Users/LENOVO/Desktop/microprocessor_new/final_project/rtl/HazardDetectionUnit.v|
+!s90 -reportprogress|300|-work|work|-stats=none|C:/Users/LENOVO/Desktop/microprocessor_new/final_project/rtl/HazardDetectionUnit.v|
+!i113 1
+R5
+R6
+n@hazard@detection@unit
+vID_EX_Register
+R7
+!i10b 1
+!s100 ^N2ZP`N;Q;dL2Yk_f`5mF0
+IDzI>Dcljg?W=65lcPHj1d0
+R2
+R0
+w1766279707
+8C:/Users/LENOVO/Desktop/microprocessor_new/final_project/rtl/ID_EX_Register.v
+FC:/Users/LENOVO/Desktop/microprocessor_new/final_project/rtl/ID_EX_Register.v
+L0 7
+R3
+r1
+!s85 0
+31
+R8
+!s107 C:/Users/LENOVO/Desktop/microprocessor_new/final_project/rtl/ID_EX_Register.v|
+!s90 -reportprogress|300|-work|work|-stats=none|C:/Users/LENOVO/Desktop/microprocessor_new/final_project/rtl/ID_EX_Register.v|
+!i113 1
+R5
+R6
+n@i@d_@e@x_@register
+vIF_ID_Register
+R7
+!i10b 1
+!s100 _2Wzjbe:S3SR^nf3`UMCU3
+I3>YfUS>ZaI@l@6iGd2Q^73
+R2
+R0
+w1766245319
+8C:/Users/LENOVO/Desktop/microprocessor_new/final_project/rtl/IF_ID_Register.v
+FC:/Users/LENOVO/Desktop/microprocessor_new/final_project/rtl/IF_ID_Register.v
+L0 7
+R3
+r1
+!s85 0
+31
+R8
+!s107 C:/Users/LENOVO/Desktop/microprocessor_new/final_project/rtl/IF_ID_Register.v|
+!s90 -reportprogress|300|-work|work|-stats=none|C:/Users/LENOVO/Desktop/microprocessor_new/final_project/rtl/IF_ID_Register.v|
+!i113 1
+R5
+R6
+n@i@f_@i@d_@register
+vInputPort
+R7
+!i10b 1
+!s100 QT3JPOk7HCgV[mok8V7H_3
+IjWKENdd<E^A>fQcfem@9J0
+R2
+R0
+w1766320669
+8C:/Users/LENOVO/Desktop/microprocessor_new/final_project/rtl/InputPort.v
+FC:/Users/LENOVO/Desktop/microprocessor_new/final_project/rtl/InputPort.v
+L0 7
+R3
+r1
+!s85 0
+31
+R8
+!s107 C:/Users/LENOVO/Desktop/microprocessor_new/final_project/rtl/InputPort.v|
+!s90 -reportprogress|300|-work|work|-stats=none|C:/Users/LENOVO/Desktop/microprocessor_new/final_project/rtl/InputPort.v|
+!i113 1
+R5
+R6
+n@input@port
+vInstructionMemory
+R7
+!i10b 1
+!s100 @6PoUDlzMNZd4PI]`e:N90
+INa4Dl9^HXIUlQPJRNTJl92
+R2
+R0
+w1766344990
+8C:/Users/LENOVO/Desktop/microprocessor_new/final_project/rtl/InstructionMemory.v
+FC:/Users/LENOVO/Desktop/microprocessor_new/final_project/rtl/InstructionMemory.v
+L0 4
+R3
+r1
+!s85 0
+31
+R8
+!s107 C:/Users/LENOVO/Desktop/microprocessor_new/final_project/rtl/InstructionMemory.v|
+!s90 -reportprogress|300|-work|work|-stats=none|C:/Users/LENOVO/Desktop/microprocessor_new/final_project/rtl/InstructionMemory.v|
+!i113 1
+R5
+R6
+n@instruction@memory
+vInterruptController
+R1
+!i10b 1
+!s100 =73RQ9JPl3;cU;G]fI;A]3
+I8ICN[mLD4gkdf]b?>jCB10
+R2
+R0
+w1766332831
+8C:/Users/LENOVO/Desktop/microprocessor_new/final_project/rtl/InterruptController.v
+FC:/Users/LENOVO/Desktop/microprocessor_new/final_project/rtl/InterruptController.v
+L0 6
+R3
+r1
+!s85 0
+31
+R4
+!s107 C:/Users/LENOVO/Desktop/microprocessor_new/final_project/rtl/InterruptController.v|
+!s90 -reportprogress|300|-work|work|-stats=none|C:/Users/LENOVO/Desktop/microprocessor_new/final_project/rtl/InterruptController.v|
+!i113 1
+R5
+R6
+n@interrupt@controller
+vMEM_WB_Register
+R1
+!i10b 1
+!s100 LQhA<PLV^2Q2CJ^Oi4cNS0
+IV7@cVRBN>6JN@61n@O77j0
+R2
+R0
+w1766282367
+8C:/Users/LENOVO/Desktop/microprocessor_new/final_project/rtl/MEM_WB_Register.v
+FC:/Users/LENOVO/Desktop/microprocessor_new/final_project/rtl/MEM_WB_Register.v
+L0 6
+R3
+r1
+!s85 0
+31
+R4
+!s107 C:/Users/LENOVO/Desktop/microprocessor_new/final_project/rtl/MEM_WB_Register.v|
+!s90 -reportprogress|300|-work|work|-stats=none|C:/Users/LENOVO/Desktop/microprocessor_new/final_project/rtl/MEM_WB_Register.v|
+!i113 1
+R5
+R6
+n@m@e@m_@w@b_@register
+vOutputPort
+R1
+!i10b 1
+!s100 3HQ8NCI;IMZAY1ZWBBRb:2
+IkAJ2>][7oJh[@;XTEUkFk2
+R2
+R0
+w1766320397
+8C:/Users/LENOVO/Desktop/microprocessor_new/final_project/rtl/OutputPort.v
+FC:/Users/LENOVO/Desktop/microprocessor_new/final_project/rtl/OutputPort.v
+L0 7
+R3
+r1
+!s85 0
+31
+R4
+!s107 C:/Users/LENOVO/Desktop/microprocessor_new/final_project/rtl/OutputPort.v|
+!s90 -reportprogress|300|-work|work|-stats=none|C:/Users/LENOVO/Desktop/microprocessor_new/final_project/rtl/OutputPort.v|
+!i113 1
+R5
+R6
+n@output@port
+vProcessor
+R1
+!i10b 1
+!s100 Nl:AS7?mN2XZ^=8:4_=fg2
+IkI73Cc;FR`GX_RlYoHEC60
+R2
+R0
+w1766334167
+8C:/Users/LENOVO/Desktop/microprocessor_new/final_project/rtl/Processor.v
+FC:/Users/LENOVO/Desktop/microprocessor_new/final_project/rtl/Processor.v
+L0 7
+R3
+r1
+!s85 0
+31
+R4
+!s107 C:/Users/LENOVO/Desktop/microprocessor_new/final_project/rtl/Processor.v|
+!s90 -reportprogress|300|-work|work|-stats=none|C:/Users/LENOVO/Desktop/microprocessor_new/final_project/rtl/Processor.v|
+!i113 1
+R5
+R6
+n@processor
+vProgramCounter
+R1
+!i10b 1
+!s100 63LdELm:O_WAJ0LSNPCgk3
+IYz9gL5BJO3WF4NEG5[SoH0
+R2
+R0
+w1766244460
+8C:/Users/LENOVO/Desktop/microprocessor_new/final_project/rtl/ProgramCounter.v
+FC:/Users/LENOVO/Desktop/microprocessor_new/final_project/rtl/ProgramCounter.v
+L0 7
+R3
+r1
+!s85 0
+31
+R4
+!s107 C:/Users/LENOVO/Desktop/microprocessor_new/final_project/rtl/ProgramCounter.v|
+!s90 -reportprogress|300|-work|work|-stats=none|C:/Users/LENOVO/Desktop/microprocessor_new/final_project/rtl/ProgramCounter.v|
+!i113 1
+R5
+R6
+n@program@counter
+vRegisterFile
+R1
+!i10b 1
+!s100 g8RccgiG^i2E;nmbBj97S0
+IolamZXj9kJMgLKJT7g:BW2
+R2
+R0
+w1766325929
+8C:/Users/LENOVO/Desktop/microprocessor_new/final_project/rtl/RegisterFile.v
+FC:/Users/LENOVO/Desktop/microprocessor_new/final_project/rtl/RegisterFile.v
+L0 13
+R3
+r1
+!s85 0
+31
+R4
+!s107 C:/Users/LENOVO/Desktop/microprocessor_new/final_project/rtl/RegisterFile.v|
+!s90 -reportprogress|300|-work|work|-stats=none|C:/Users/LENOVO/Desktop/microprocessor_new/final_project/rtl/RegisterFile.v|
+!i113 1
+R5
+R6
+n@register@file
+vtb_Processor
+R1
+!i10b 1
+!s100 Pfbf6T^G4NQHhnO7akOiT0
+ILONTlfWAY?e[nZ;Cg^FN73
+R2
+R0
+w1766345002
+8C:/Users/LENOVO/Desktop/microprocessor_new/final_project/testbenches/tb_Processor.v
+FC:/Users/LENOVO/Desktop/microprocessor_new/final_project/testbenches/tb_Processor.v
+L0 6
+R3
+r1
+!s85 0
+31
+R4
+!s107 C:/Users/LENOVO/Desktop/microprocessor_new/final_project/testbenches/tb_Processor.v|
+!s90 -reportprogress|300|-work|work|-stats=none|C:/Users/LENOVO/Desktop/microprocessor_new/final_project/testbenches/tb_Processor.v|
+!i113 1
+R5
+R6
+ntb_@processor
