@@ -1,0 +1,174 @@
+
+============================================================
+8-bit Pipelined Processor – Project Specification (ELC 3030)
+============================================================
+
+1. OVERVIEW
+-----------
+Architecture  : RISC-like
+Data Width   : 8-bit
+Memory       : 256 bytes, byte-addressable
+Instruction  : 1 byte or 2 bytes
+Registers    : R0, R1, R2, R3 (R3 is Stack Pointer)
+Initial SP   : 255
+
+------------------------------------------------------------
+
+2. REGISTERS
+------------
+PC   : 8-bit Program Counter
+R0–R3: 8-bit General Purpose Registers
+SP   : Stack Pointer = R3
+
+Condition Code Register (CCR):
++---+-----------+
+| Z | Zero Flag |
+| N | Negative  |
+| C | Carry     |
+| V | Overflow  |
++---+-----------+
+
+------------------------------------------------------------
+
+3. INPUT / OUTPUT
+-----------------
+IN.PORT   : 8-bit input port
+OUT.PORT  : 8-bit output port
+INTR.IN   : Non-maskable interrupt
+RESET.IN  : Reset signal
+
+------------------------------------------------------------
+
+4. INSTRUCTION FETCH & FIELDS
+-----------------------------
+Instruction Byte      : i = M[PC]
+Opcode (4 bits)       : i[7:4]
+ra (2 bits)           : i[3:2]
+rb (2 bits)           : i[1:0]
+Immediate / Address   : M[PC+1]
+
+------------------------------------------------------------
+
+5. INSTRUCTION FORMATS
+----------------------
+
+A-FORMAT (1 BYTE)
+[ opcode(4) | ra(2) | rb(2) ]
+
+B-FORMAT (1 BYTE)
+[ opcode(4) | brx/ra(2) | rb(2) ]
+
+L-FORMAT (1 or 2 BYTES)
+[ opcode(4) | ra(2) | rb(2) ]
+[ immediate / effective address ]
+
+------------------------------------------------------------
+
+6. A-FORMAT INSTRUCTIONS
+------------------------
+
++------+--------+---------------------------------------------+
+| OPC  | MNEM   | OPERATION                                   |
++------+--------+---------------------------------------------+
+| 0    | NOP    | PC ← PC + 1                                 |
+| 1    | MOV    | R[ra] ← R[rb]                               |
+| 2    | ADD    | R[ra] ← R[ra] + R[rb]                       |
+| 3    | SUB    | R[ra] ← R[ra] − R[rb]                       |
+| 4    | AND    | R[ra] ← R[ra] AND R[rb]                     |
+| 5    | OR     | R[ra] ← R[ra] OR R[rb]                      |
+| 6    | RLC    | Rotate left through carry                   |
+| 6    | RRC    | Rotate right through carry                  |
+| 6    | SETC   | C ← 1                                       |
+| 6    | CLRC   | C ← 0                                       |
+| 7    | PUSH   | X[SP--] ← R[rb]                             |
+| 7    | POP    | R[rb] ← X[++SP]                             |
+| 7    | OUT    | OUT.PORT ← R[rb]                            |
+| 7    | IN     | R[rb] ← IN.PORT                             |
+| 8    | NOT    | R[rb] ← ~R[rb]                              |
+| 8    | NEG    | R[rb] ← -R[rb]                              |
+| 8    | INC    | R[rb] ← R[rb] + 1                           |
+| 8    | DEC    | R[rb] ← R[rb] - 1                           |
++------+--------+---------------------------------------------+
+
+Flags affected:
+- Logic ops: Z, N
+- Arithmetic ops: Z, N, C, V
+
+------------------------------------------------------------
+
+7. B-FORMAT INSTRUCTIONS
+------------------------
+
++------+--------+---------------------------------------------+
+| OPC  | MNEM   | OPERATION                                   |
++------+--------+---------------------------------------------+
+| 9    | JZ     | if Z=1  → PC ← R[rb]                        |
+| 9    | JN     | if N=1  → PC ← R[rb]                        |
+| 9    | JC     | if C=1  → PC ← R[rb]                        |
+| 9    | JV     | if V=1  → PC ← R[rb]                        |
+| 10   | LOOP   | R[ra]-- ; if ≠0 PC ← R[rb]                  |
+| 11   | JMP    | PC ← R[rb]                                 |
+| 11   | CALL   | X[SP--] ← PC+1 ; PC ← R[rb]                |
+| 11   | RET    | PC ← X[++SP]                               |
+| 11   | RTI    | PC ← X[++SP] ; Flags restored              |
++------+--------+---------------------------------------------+
+
+------------------------------------------------------------
+
+8. L-FORMAT INSTRUCTIONS
+------------------------
+
++------+--------+-------+-----------------------------------------+
+| OPC  | MNEM   | BYTES | OPERATION                               |
++------+--------+-------+-----------------------------------------+
+| 12   | LDM    | 2     | R[rb] ← imm                             |
+| 12   | LDD    | 2     | R[rb] ← M[ea]                           |
+| 12   | STD    | 2     | M[ea] ← R[rb]                           |
+| 13   | LDI    | 1     | R[rb] ← M[R[ra]]                        |
+| 14   | STI    | 1     | M[R[ra]] ← R[rb]                        |
++------+--------+-------+-----------------------------------------+
+
+------------------------------------------------------------
+
+9. INTERRUPT HANDLING
+---------------------
+On interrupt:
+- X[SP--] ← PC
+- Flags preserved
+- PC ← M[1]
+
+RTI:
+- PC ← X[++SP]
+- Flags restored
+
+------------------------------------------------------------
+
+10. RESET BEHAVIOR
+------------------
+On reset:
+- PC ← M[0]
+
+------------------------------------------------------------
+
+11. IMPLEMENTATION NOTES
+------------------------
+- FSM-based control unit
+- Shared memory (Von Neumann preferred)
+- Data forwarding required
+- VHDL or Verilog allowed
+- Simulation via EDA Playground
+- VCD waveform analysis required
+
+------------------------------------------------------------
+
+12. EVALUATION SUMMARY
+----------------------
+Reset                     : 5 marks
+Each instruction (32)     : 80 marks
+Data forwarding           : 10 marks
+Interrupt                 : 5 marks
+Bonus (Synthesis + VN)    : 10 marks
+
+============================================================
+END OF SPECIFICATION
+============================================================

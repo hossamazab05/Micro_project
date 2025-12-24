@@ -1,0 +1,60 @@
+ELC 3030 Processor Instruction Set Summary
+
+============================================================
+A-Format Instructions (1 Byte)
+============================================================
+Mnemonic | Opcode | Length | Function                                      | Flags
+---------|--------|--------|-----------------------------------------------|-------
+NOP      | 0      | 1      | PC ← PC + 1                                   | -
+MOV      | 1      | 1      | R[ra] ← R[rb]                                 | -
+ADD      | 2      | 1      | R[ra] ← R[ra] + R[rb]                         | Z,N,C,V
+SUB      | 3      | 1      | R[ra] ← R[ra] - R[rb]                         | Z,N,C,V
+AND      | 4      | 1      | R[ra] ← R[ra] & R[rb]                         | Z,N
+OR       | 5      | 1      | R[ra] ← R[ra] | R[rb]                         | Z,N
+RLC      | 6      | 1      | Rotate Left through Carry (ra=0)              | C,N,Z
+RRC      | 6      | 1      | Rotate Right through Carry (ra=1)             | C,N,Z
+SETC     | 6      | 1      | C ← 1 (ra=2)                                  | C
+CLRC     | 6      | 1      | C ← 0 (ra=3)                                  | C
+PUSH     | 7      | 1      | X[SP--] ← R[rb] (ra=0)                        | -
+POP      | 7      | 1      | R[rb] ← X[++SP] (ra=1)                        | -
+OUT      | 7      | 1      | OUT.PORT ← R[rb] (ra=2)                       | -
+IN       | 7      | 1      | R[rb] ← IN.PORT (ra=3)                        | -
+NOT      | 8      | 1      | R[rb] ← ~R[rb] (ra=0)                         | Z,N
+NEG      | 8      | 1      | R[rb] ← -R[rb] (ra=1)                         | Z,N,C,V
+INC      | 8      | 1      | R[rb] ← R[rb] + 1 (ra=2)                      | Z,N,C,V
+DEC      | 8      | 1      | R[rb] ← R[rb] - 1 (ra=3)                      | Z,N,C,V
+
+============================================================
+B-Format Instructions (1 Byte)
+* ra field is used as 'brx'
+============================================================
+Mnemonic | Opcode | Length | Function
+---------|--------|--------|-----------------------------------------------
+JZ       | 9      | 1      | If Z=1, PC ← R[rb]
+JN       | 9      | 1      | If N=1, PC ← R[rb]
+JC       | 9      | 1      | If C=1, PC ← R[rb]
+JV       | 9      | 1      | If V=1, PC ← R[rb]
+LOOP     | 10     | 1      | R[ra]--; If R[ra]≠0, PC ← R[rb]
+JMP      | 11     | 1      | PC ← R[rb] (brx=0)
+CALL     | 11     | 1      | Push PC+1; PC ← R[rb] (brx=1)
+RET      | 11     | 1      | Pop PC (brx=2)
+RTI      | 11     | 1      | Pop PC & Flags (brx=3)
+
+============================================================
+L-Format Instructions (1 or 2 Bytes)
+============================================================
+Mnemonic | Opcode | Length | Function
+---------|--------|--------|-----------------------------------------------
+LDM      | 12     | 2      | R[rb] ← Imm (ra=0)
+LDD      | 12     | 2      | R[rb] ← M[Address] (ra=1)
+STD      | 12     | 2      | M[Address] ← R[rb] (ra=2)
+LDI      | 13     | 1      | R[rb] ← M[R[ra]]
+STI      | 14     | 1      | M[R[ra]] ← R[rb]
+
+============================================================
+Registers & Stack Details
+============================================================
+Registers: R0, R1, R2, R3 (SP)
+Stack Push: Post-Decrement (SP--)
+Stack Pop:  Pre-Increment (++SP)
+Flags:      Z (Zero), N (Negative), C (Carry), V (Overflow)

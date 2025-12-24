@@ -1,0 +1,261 @@
+==============================================================================
+Cairo University
+Faculty of Engineering - Fall 2025
+Electronics and Electrical Communications Engineering Department
+ELC 3030: Advanced Processor Architecture - Project
+==============================================================================
+
+1. OBJECTIVES
+------------------------------------------------------------------------------
+• The goal of this project is for students to design and implement a simple
+  8-bit pipelined processor, von Neumann or Harvard, using VHDL or Verilog
+  (student’s choice).
+• This project emphasizes resource sharing (especially the single memory
+  resource) and the design of a Finite State Machine (FSM) Control Unit.
+• The design should conform to the ISA specification described in the
+  following sections.
+
+2. INTRODUCTION
+------------------------------------------------------------------------------
+The processor in this project has a RISC-like instruction set architecture.
+Instructions are 1-byte or 2-bytes depending on the type of instructions.
+There are four 1-byte general purpose registers; R0, R1, R2, and R3. R3 also
+works as a stack pointer (SP); hence; points to the top of the stack. The
+initial value of SP is 255. The memory address space is 256 bytes and is
+byte addressable.
+
+When an interrupt occurs, the address of the instruction next to the
+interrupted instruction is saved on top of the stack, and PC is loaded from
+address 1 of the memory. To return from an interrupt, an RTI instruction
+loads PC from the top of stack, and the flow of the program resumes from the
+instruction after the interrupted instruction.
+
+3. ISA SPECIFICATIONS
+------------------------------------------------------------------------------
+A) Registers
+    PC<7:0>       : 8-bit program counter
+    R[0:3]<7:0>   : Four 8-bit general purpose registers
+    SP<7:0>       : 8-bit stack pointer (Alias for R[3])
+    CCR<3:0>      : Condition code register
+        Z<0>:=CCR<0> : Zero flag, change after arithmetic, logical, or shift
+        N<0>:=CCR<1> : Negative flag, change after arithmetic, logical, or shift
+        C<0>:=CCR<2> : Carry flag, change after arithmetic or shift
+        V<0>:=CCR<3> : Overflow, change after arithmetic or shift
+
+B) Input-Output
+    IN.PORT<7:0>  : 8-bit data input port
+    OUT.PORT<7:0> : 8-bit data output port
+    INTR.IN<0>    : A single, non-maskable interrupt
+    RESET.IN<0>   : Reset signal
+
+C) Instruction Format
+    i<7:0>        : 8-bit instruction word (M[PC])
+    opcode<3:0>   : 4-bit opcode (i<7:4>)
+    ra<1:0>       : 2-bit operand register and result register field (i<3:2>)
+    rb<1:0>       : 2-bit operand register field (i<1:0>)
+    brx<1:0>      : 2-bit branch index field (i<3:2>)
+    ea<7:0>       : Effective address (M[PC+1])
+    imm<7:0>      : Immediate operand (M[PC+1])
+
+    Arithmetic operations are performed in two’s complement.
+    Shift and logical operations are bit-wise.
+
+4. INSTRUCTION FORMATS
+------------------------------------------------------------------------------
+There are 3 different instruction formats:
+
+4.1 A-Format
+--------------------
+Figure 1 depicts A-format instructions. These instructions are 1-byte. Op-code
+is the high order nibble and the low order nibble determines two registers.
+Structure: [ Opcode(4) | ra(2) | rb(2) ]
+
+Table I shows op-code values for A-format instructions and explains their 
+functionality. R[ra] and R[rb] indicate values of registers ra and rb, 
+respectively. 
+For example: ADD r2, r1 instruction has op-code = 2, ra = 2, rb = 1, and 
+bit stream of 00101001. Hence, the hexadecimal format of the instruction is: 0x29.
+
+The PUSH instruction writes the contents of register rb into the memory 
+location addressed by SP. Then SP is decremented. In the POP instruction, SP 
+is first incremented, and then, the contents of the memory location pointed to
+by SP are written into rb.
+
+Table I: A-format Instructions (X is the stack)
+Mnemonic | Opcode | Bytes | Function
+---------|--------|-------|---------------------------------------------------
+NOP      | 0      | 1     | PC ← PC + 1
+MOV      | 1      | 1     | R[ra] ← R[rb]; PC ← PC + 1
+ADD      | 2      | 1     | R[ra] ← R[ra] + R[rb]; PC ← PC + 1
+         |        |       | flags: Z, N, C, V
+SUB      | 3      | 1     | R[ra] ← R[ra] - R[rb]; PC ← PC + 1
+         |        |       | flags: Z, N, C, V
+AND      | 4      | 1     | R[ra] ← R[ra] AND R[rb]; PC ← PC + 1
+         |        |       | flags: Z, N
+OR       | 5      | 1     | R[ra] ← R[ra] OR R[rb]; PC ← PC + 1
+         |        |       | flags: Z, N
+RLC      | 6      | 1     | (ra=0): Rotate Left through Carry; PC++
+RRC      | 6      | 1     | (ra=1): Rotate Right through Carry; PC++
+SETC     | 6      | 1     | (ra=2): C ← 1; PC ← PC + 1
+CLRC     | 6      | 1     | (ra=3): C ← 0; PC ← PC + 1
+PUSH     | 7      | 1     | (ra=0): X[SP--] ← R[rb]; PC ← PC + 1
+POP      | 7      | 1     | (ra=1): R[rb] ← X[++SP]; PC ← PC + 1
+OUT      | 7      | 1     | (ra=2): OUT.PORT ← R[rb]; PC ← PC + 1
+IN       | 7      | 1     | (ra=3): R[rb] ← IN.PORT; PC ← PC + 1
+NOT      | 8      | 1     | (ra=0): R[rb] ← ~R[rb]; PC++; flags: Z, N
+NEG      | 8      | 1     | (ra=1): R[rb] ← -R[rb]; PC++; flags: Z, N, C, V
+INC      | 8      | 1     | (ra=2): R[rb] ← R[rb] + 1; PC++; flags: Z, N, C, V
+DEC      | 8      | 1     | (ra=3): R[rb] ← R[rb] - 1; PC++; flags: Z, N, C, V
+
+4.2 B-Format
+--------------------
+B-format instructions are 1-byte and include instructions that break the 
+sequential execution of programs. As figure 2 shows, b-format instructions 
+have op-code, ra “also named brx”, and rb. The brx field determines the type 
+of the branch instruction.
+Structure: [ Opcode(4) | brx(2) | rb(2) ]
+
+Table II shows the details of B-format instructions. JMP instruction jumps to 
+the destination address determined by the rb field. JZ is a conditional branch. 
+If Z flag is one, it jumps to the destination address determined by rb. 
+Similarly, JN, JC, and JV jump to the destination address determined by rb if 
+N, C, and V flags are one, respectively. CALL is used for subroutine call. 
+
+The processor has a dedicated pin for external interrupt. On the rising edge 
+of the interrupt pin, the address of the next instruction is written into the 
+stack and the SP is decremented (X[SP--] ← PC). PC is loaded from address 1 
+(PC ← M[1]), and processor jumps into interrupt service routine. Flags are 
+also saved. At the end of the interrupt service routine, RTI instruction 
+executes. RTI is similar to b-format instructions. It increments SP and load 
+PC from the top of the stack. Flags are restored.
+
+Table II: B-format Instructions
+Mnemonic | Opcode | Bytes | Function
+---------|--------|-------|---------------------------------------------------
+JZ       | 9      | 1     | (brx=0): If Z=1, PC ← R[rb]; else PC++
+JN       | 9      | 1     | (brx=1): If N=1, PC ← R[rb]; else PC++
+JC       | 9      | 1     | (brx=2): If C=1, PC ← R[rb]; else PC++
+JV       | 9      | 1     | (brx=3): If V=1, PC ← R[rb]; else PC++
+LOOP     | 10     | 1     | R[ra]--; If R[ra]≠0, PC ← R[rb]; else PC++
+JMP      | 11     | 1     | (brx=0): PC ← R[rb]
+CALL     | 11     | 1     | (brx=1): X[SP--] ← PC+1; PC ← R[rb]
+RET      | 11     | 1     | (brx=2): PC ← X[++SP]
+RTI      | 11     | 1     | (brx=3): PC ← X[++SP]; Flags restored
+
+4.3 L-Format
+--------------------
+L-format instructions are either one or two bytes and are used for load/store
+instructions. For two bytes instructions, the second byte holds the address 
+of memory or an immediate value. Figure 3 shows L-format instructions.
+Structure: [ Opcode(4) | ra(2) | rb(2) ] [ ea/imm ]
+
+Table III shows the details of L-format instructions. LDM writes a constant 
+value (imm) into register rb. LDD and STD instructions use direct addressing. 
+They read/write the contents of register rb from/into address ea. M[ea] means 
+the content of a memory location with address ea. LDI and STI use indirect 
+addressing. They read/write the contents of register rb from/into the memory 
+location pointed to by ra. M[R[ra]] means the content of a memory location 
+with address R[ra].
+
+Table III: L-format Instructions
+Mnemonic | Opcode | Bytes | Function
+---------|--------|-------|---------------------------------------------------
+LDM      | 12     | 2     | (ra=0): R[rb] ← imm; PC ← PC + 2
+LDD      | 12     | 2     | (ra=1): R[rb] ← M[ea]; PC ← PC + 2
+STD      | 12     | 2     | (ra=2): M[ea] ← R[rb]; PC ← PC + 2
+LDI      | 13     | 1     | R[rb] ← M[R[ra]]; PC ← PC + 1
+STI      | 14     | 1     | M[R[ra]] ← R[rb]; PC ← PC + 1
+
+5. IMPLEMENTATION REQUIREMENTS
+------------------------------------------------------------------------------
+*   You can use whatever tool for simulation you want. If you don’t have any
+    tool available, you can use EDA Playground (https://www.edaplayground.com/)
+    for simulation and verification.
+*   Key Task: Ensure you enable VCD dump in the run options and analyze the
+    waveforms. Your submission should include the final HDL file and a
+    screenshot of the waveform.
+
+6. GENERAL ADVICE
+------------------------------------------------------------------------------
+*   Compile your design on a regular basis (after each modification) so that
+    you can figure out new errors early. Accumulated errors are harder to track.
+*   Use the engineering sense to back trace the error source.
+*   As much as you can, don’t ignore warnings.
+*   After each major step, and if you have a working processor, save the design
+    before you modify it.
+*   Always save the ram files to easily export and import them.
+*   Start early and give yourself enough time for testing.
+
+7. SUBMISSION DETAILS
+------------------------------------------------------------------------------
+*   Team: Max 6 members.
+*   Deadline: 20-12-2025 11:59 PM.
+*   Submission: Single .zip folder on Google Classroom containing:
+    o   PDF Report: System design (Architecture, FSM), HDL codes, Test benches,
+        Waveform screenshots.
+    o   Video: Demo of working processor with test cases by all members.
+    o   Folder: Source HDL files.
+*   Mention team members on PDF cover page.
+*   Neat reports and on-time submission are part of the grade.
+
+8. EVALUATION CRITERIA
+------------------------------------------------------------------------------
+Table IV: Evaluation Criteria
+Marks                | Item
+---------------------|--------------------------------------------------------
+5 marks              | Reset
+80 marks             | Each instruction (2.5 marks each for 32 instructions)
+10 marks             | Data Forwarding
+5 marks              | Interrupt
+10 marks (Bonus)     | Synthesizing processor (Frequency/Utilization)
+                     | Using Von Neumann memory architecture (5 marks each)
+
+9. PROCESSOR ISA SUMMARY
+------------------------------------------------------------------------------
+Table V: Processor ISA (X is the stack and M is the Memory)
+
+Mnemonic | Opcode | Length | Function
+---------|--------|--------|---------------------------------------------------
+NOP      | 0      | 1      | PC ← PC + 1
+MOV      | 1      | 1      | R[ra] ← R[rb]; PC ← PC + 1
+ADD      | 2      | 1      | R[ra] ← R[ra] + R[rb]; PC++
+         |        |        | Change C, V; Update Z, N
+SUB      | 3      | 1      | R[ra] ← R[ra] – R[rb]; PC++
+         |        |        | Change C, V; Update Z, N
+AND      | 4      | 1      | R[ra] ← R[ra] AND R[rb]; PC++
+         |        |        | Update Z, N
+OR       | 5      | 1      | R[ra] ← R[ra] OR R[rb]; PC++
+         |        |        | Update Z, N
+RLC      | 6      | 1      | (ra=0): C ← R[rb]<7>; R[rb] ← R[rb]<6:0>&C; PC++
+RRC      | 6      | 1      | (ra=1): C ← R[rb]<0>; R[rb] ← C&R[rb]<7:1>; PC++
+SETC     | 6      | 1      | (ra=2): C ← 1; PC ← PC + 1
+CLRC     | 6      | 1      | (ra=3): C ← 0; PC ← PC + 1
+PUSH     | 7      | 1      | (ra=0): X[SP--] ← R[rb]; PC ← PC + 1
+POP      | 7      | 1      | (ra=1): R[rb] ← X[++SP]; PC ← PC + 1
+OUT      | 7      | 1      | (ra=2): OUT.PORT ← R[rb]; PC ← PC + 1
+IN       | 7      | 1      | (ra=3): R[rb] ← IN.PORT; PC ← PC + 1
+NOT      | 8      | 1      | (ra=0): R[rb] ← ~R[rb]; PC++
+         |        |        | Update Z, N
+NEG      | 8      | 1      | (ra=1): R[rb] ← -R[rb]; PC++
+         |        |        | Update Z, N
+INC      | 8      | 1      | (ra=2): R[rb] ← R[rb] + 1; PC++
+         |        |        | Update Z, N; Change C, V
+DEC      | 8      | 1      | (ra=3): R[rb] ← R[rb] – 1; PC++
+         |        |        | Update Z, N; Change C, V
+JZ       | 9      | 1      | (brx=0 ∩ Z=1): PC ← R[rb]; else PC++
+JN       | 9      | 1      | (brx=1 ∩ N=1): PC ← R[rb]; else PC++
+JC       | 9      | 1      | (brx=2 ∩ C=1): PC ← R[rb]; else PC++
+JV       | 9      | 1      | (brx=3 ∩ V=1): PC ← R[rb]; else PC++
+LOOP     | 10     | 1      | R[ra]--; If R[ra]≠0, PC ← R[rb]; else PC++
+JMP      | 11     | 1      | (brx=0): PC ← R[rb]
+CALL     | 11     | 1      | (brx=1): X[SP--] ← PC+1; PC ← R[rb]
+RET      | 11     | 1      | (brx=2): PC ← X[++SP]
+RTI      | 11     | 1      | (brx=3): PC ← X[++SP]; Flags restored
+LDM      | 12     | 2      | (ra=0): R[rb] ← imm; PC ← PC + 2
+LDD      | 12     | 2      | (ra=1): R[rb] ← M[ea]; PC ← PC + 2
+STD      | 12     | 2      | (ra=2): M[ea] ← R[rb]; PC ← PC + 2
+LDI      | 13     | 1      | R[rb] ← M[R[ra]]; PC ← PC + 1
+STI      | 14     | 1      | M[R[ra]] ← R[rb]; PC ← PC + 1
+
+Reset    | -      | -      | PC ← M[0]
+Interrupt| -      | -      | X[SP--]←PC; PC ← M[1]; Flags preserved
