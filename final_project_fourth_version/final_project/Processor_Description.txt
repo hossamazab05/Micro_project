@@ -1,0 +1,96 @@
+Processor.v - Detailed Module Description
+=========================================
+
+Overview
+--------
+The `Processor.v` module serves as the top-level entity for the ELC3030 Pipelined Processor. It acts as the "motherboard" of the CPU, instantiating all pipeline stages, control logic, memory interfaces, and the interrupt controller. It physically connects the Instruction Fetch (IF), Instruction Decode (ID), Execution (EX), Memory Access (MEM), and Write-Back (WB) stages using a complex web of internal buses.
+
+This module does not implement the ALU or Register File logic itself but rather orchestrates their interaction, managing data flow, hazard resolution, forwarding paths, and global control signals (like Reset and Interrupts).
+
+1. Module Interface
+-------------------
+The processor communicates with the outside world via a minimal set of signals:
+
+*   **Inputs:**
+    *   `clk` (1-bit): Global system clock. All state changes (PC update, register writes) occur on the rising edge.
+    *   `rst_n` (1-bit): Active-low asynchronous reset. When 0, the PC is cleared to 0, and the control unit state is reset.
+    *   `INTR_IN` (1-bit): External Interrupt Request signal. A high level triggers the hardware interrupt sequence.
+    *   `INPUT_PORT_PINS` (8-bit): Physical input lines for the `IN` instruction.
+
+*   **Outputs:**
+    *   `OUTPUT_PORT_PINS` (8-bit): Physical output lines driven by the `OUT` instruction.
+
+2. Internal Bus Architecture
+----------------------------
+The processor uses a strict naming convention for internal wires to track data through the pipeline. This makes debugging and signal tracing systematic.
+
+*   `if_...`: Signals in the Instruction Fetch stage (e.g., `if_pc_out`).
+*   `id_...`: Signals in the Instruction Decode stage (output of IF/ID register or Control Unit).
+*   `ex_...`: Signals in the Execute stage (output of ID/EX register).
+*   `mem_...`: Signals in the Memory stage (output of EX/MEM register).
+*   `wb_...`: Signals in the Write-Back stage (output of MEM/WB register).
+
+**Key Buses:**
+*   **Control Signals:** `id_reg_write`, `ex_mem_read`, etc. flow down the pipeline registers (`ID_EX`, `EX_MEM`, `MEM_WB`) to reach the stage where they are active.
+*   **Data Paths:** `id_reg_data1` (Operand A) and `id_reg_data2` (Operand B) travel to the EX stage, where they may be swapped with forwarded values (`alu_operand1_fwd`) before entering the ALU.
+
+3. Special Control Logic Blocks
+-------------------------------
+The `Processor.v` module contains "glue logic" that is critical for correct pipelined operation. This logic resides outside the submodules.
+
+A. Program Counter (PC) Muxing
+   The Next PC is decided by a strict priority encoder (`final_pc_target`):
+   1.  **Interrupt (Highest Priority):** If `intr_load_pc_en` is true, the Interrupt Controller forces the PC to the ISR address (`intr_new_pc`).
+   2.  **Branch Taken:** If `ex_branch_taken` is true (conditional jump resolved in EX stage), the PC jumps to `ex_branch_target`.
+   3.  **Return/Jump Register:** If `mem_jwsp` is true (RET/RTI resolved in MEM stage), the PC loads from memory (`mem_read_data`).
+   4.  **Normal Execution:** Defaults to `ex_branch_target` (which holds PC+1 in normal flow) or `if_pc_plus_1`.
+
+B. Phase-Aware PC Muxing (Multi-Cycle Instruction Support)
+   The processor supports 2-byte instructions (like LDM, LDD). The Control Unit operates in multiple states.
+   *   **Problem:** During the second cycle of a 2-byte instruction (Operand Fetch), the PC has already advanced.
+   *   **Solution:** A mux (`muxed_id_pc`) selects between `if_pc_out` (live PC) and `id_pc` (latched PC) based on the Control Unit state (`cu_current_state`). This ensures the correct address is passed to the ID/EX register for operand fetching.
+
+C. Flag Forwarding Logic
+   To support back-to-back instructions where one depends on the flags set by the previous one (e.g., `ADD` followed immediately by `JZ`), the processor implements flag forwarding.
+   *   `effective_flags_for_ex`: This 4-bit bus selects flags from:
+       1.  **MEM Stage (`mem_flags`):** If the previous instruction in MEM is updating flags.
+       2.  **WB Stage (`wb_flags`):** If the instruction in WB is updating flags.
+       3.  **CCR Register (`ccr_flags_out`):** Default case (no hazard).
+
+D. Interrupt Memory Override
+   The Interrupt Controller (hardware) needs to "steal" the memory bus to push the PC and CCR onto the stack.
+   *   `final_mem_addr`: Muxes between `mem_mem_addr` (user program) and `intr_mem_addr` (interrupt controller).
+   *   `final_mem_data`: Muxes between `mem_alu_result` (store instruction) and `intr_stack_data` (PC/CCR to push).
+   *   `final_mem_write`: ORed with `intr_stack_push` to force a write during interrupt sequences.
+
+4. Pipeline Registers
+---------------------
+The processor uses four pipeline registers to separate the five stages. Each register captures control and data signals on the rising clock edge.
+1.  **IF/ID (Instruction Fetch / Decode):** Buffers the instruction and PC. Flushed on jumps/interrupts.
+2.  **ID/EX (Decode / Execute):** Holds decoded operands, immediate values, and control flags (ALUOp, MemRead, etc.). Flushed on load-use hazards.
+3.  **EX/MEM (Execute / Memory):** Holds ALU results and memory addresses.
+4.  **MEM/WB (Memory / Write-Back):** Holds data read from memory or ALU results for final register write-back.
+
+5. Submodule Instantiations
+---------------------------
+*   **ProgramCounter (PC_Mod):** Maintains the current instruction address.
+*   **InstructionMemory (IMEM):** ROM containing the program code. Address 0x01 is hardwired for Interrupt Vector fetching.
+*   **ControlUnit (CU):** The FSM brain. Decodes opcode `id_instruction[7:4]` and generates all `id_...` control signals. It handles multi-cycle states (Fetch, Decode, Execute1, Execute2).
+*   **RegisterFile (RegFile):** 4 General Purpose Registers (R0-R3) + Stack Pointer. Supports 2 async reads and 1 sync write.
+*   **HazardDetectionUnit (HazardUnit):** Watches for data hazards (Load-Use) and Control Hazards. Generates `stall` and `flush` signals to pause the pipeline or discard invalid instructions.
+*   **ForwardingUnit (FwdUnit):** Compares source registers (RS, RT) in ID with destination registers (RD) in EX/MEM/WB. Controls `fwd_a_sel` and `fwd_b_sel` muxes to bypass stale data.
+*   **ExecutionUnit (EU):** Contains the ALU. Performs arithmetic, logic, and calculates branch targets.
+*   **DataMemory (DMEM):** RAM for data storage. Accessible in the MEM stage.
+*   **CCR (FlagsReg):** Holds Zero, Sign, Carry, Overflow flags.
+*   **InterruptController (IntCtrl):** A hardware state machine that manages the interrupt entry/exit sequence (pushing state, jumping to ISR, popping state).
+*   **InputPort / OutputPort:** Interfaces for I/O instructions.
+
+6. Detailed Signal Flow Example: `ADD R1, R2`
+---------------------------------------------
+1.  **IF:** `IMEM` outputs instruction at `if_pc_out`. Latch into `IF/ID`.
+2.  **ID:** `ControlUnit` sees Opcode. Sets `id_alu_op=ADD`, `id_reg_write=1`. `RegFile` reads R1, R2. Latch into `ID/EX`.
+3.  **EX:** `ExecutionUnit` adds operands. Result `ex_alu_result` calculated. Latch into `EX/MEM`.
+4.  **MEM:** Pass-through (not a memory op). Latch into `MEM/WB`.
+5.  **WB:** `RegFile` writes `wb_alu_result` into R1 (`wb_rd`).
+
+This module encapsulates the entire complexity of the ELC3030 architecture, providing a cycle-accurate RTL implementation of the specified ISA.

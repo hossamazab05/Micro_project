@@ -1,0 +1,85 @@
+========================================================================
+PART X: THE EXECUTION UNIT (EX STAGE) - ELC3030 PROCESSOR
+========================================================================
+
+1. EXECUTION UNIT OVERVIEW
+--------------------------
+The Execution Unit is the computational core of the ELC3030 5-stage pipelined processor. It is responsible for performing arithmetic and logical operations, calculating memory addresses, and evaluating branch conditions. To maintain high throughput in a pipelined environment, the Execution Unit is designed as a purely combinational block that processes operands arriving from the Decode (ID) stage and routes results to the Memory (MEM) and Write-Back (WB) stages.
+
+Crucially, the Execution Unit handles the resolution of data dependencies through a complex "cascade" of multiplexers, ensuring that the ALU always operates on the most up-to-date information, even if that data has not yet been written to the Register File.
+
+2. EXECUTION UNIT INTERFACE DESCRIPTION
+---------------------------------------
+
+2.1 Control Inputs
+The unit receives a wide array of control signals from the Decoder to configure its internal data path:
+* ALU & ALU_Ops [2:0]: Enable the ALU and select the specific mathematical operation.
+* IMM: Selects whether the second operand is a register value or an 8-bit immediate constant.
+* OPS: Operand Select signal used to inject a constant (+1) for increment/decrement operations.
+* Jmp & Jump_Conditional: Enable jump logic and distinguish between absolute jumps and conditional branches.
+* SP, SPOP, JWSP: Controls for Stack Pointer arithmetic and Stack-based return jumps.
+* MR, MW, WB: Memory Read, Memory Write, and Register Write-Back enables.
+* FD [1:0] & Flag_Selector [1:0]: Determine how flags are updated and which flag is checked for conditional jumps.
+
+2.2 Data and Flag Inputs
+* Data1 [7:0] & Data2 [7:0]: Operands arriving from the Register File (pre-filtered by the Forwarding Unit).
+* Immediate_Value [7:0]: Constant data extracted from 2-byte instructions.
+* PC_plus_1 [7:0]: The return address for CALL instructions.
+* Flags [3:0]: The current Condition Code Register (CCR) values (Overflow, Carry, Negative, Zero).
+
+2.3 Primary Outputs
+* ALU_Result / Data_8bit [7:0]: The final result of the computation or the data to be stored.
+* Address_8bit [7:0]: The calculated memory address for LD/ST and Stack operations.
+* Taken_Jump: A high-priority signal that tells the Program Counter to branch and the Hazard Unit to flush the pipeline.
+* Final_Flags [3:0]: The updated flag values to be stored in the CCR.
+
+3. THE OPERAND HARDWARE CASCADE
+-------------------------------
+To ensure the ALU receives the correct data for every unique instruction, the ELC3030 implements a three-tier cascade of multiplexers.
+
+3.1 Tier 1: The Forwarding Multiplexers (Hazard Resolution)
+Located at the boundary between the ID and EX stages, these multiplexers resolve Read-After-Write (RAW) hazards. For both Port A and Port B, a 3-way multiplexer selects between:
+1. Register File Data: The "stale" value read directly from the registers.
+2. MEM Forwarding: The result of the instruction immediately preceding the current one.
+3. WB Forwarding: The result of the instruction two cycles ahead.
+
+This layer ensures that Data1 and Data2 entering the Execution Unit are always architecturally correct.
+
+3.2 Tier 2: The Immediate Selection Multiplexer
+After hazard resolution, the unit must determine if the instruction is a register-to-register or an immediate-to-register operation.
+* Multiplexer Input: Forwarded_Data2 vs. Immediate_Value.
+* Control: The IMM signal.
+* Output: The "Intermediate Operand."
+
+3.3 Tier 3: The Constant Injection Multiplexer (OPS)
+The final layer in the cascade is the OPS (Operand Select) multiplexer. This hardware optimization allows the processor to perform increments, decrements, and loop counting without requiring an extra immediate byte or a dedicated register for the value "1".
+* Multiplexer Input: Intermediate_Operand (from Tier 2) vs. 8'd1 (Hardcoded constant).
+* Control: The OPS signal.
+* Final Output: ALU_Operand2, which enters the ALU.
+
+4. ALU OPERATIONS AND FLAG LOGIC
+--------------------------------
+The 8-bit ALU implements the core ISA logic. It supports four categories of operations:
+1. Arithmetic: ADD, SUB, and LOOP (with full Carry and Overflow detection).
+2. Logical: AND, OR, NOT, and NEG.
+3. Shift/Rotate: RLC and RRC (Rotate through Carry).
+4. Control: SETC and CLRC (dedicated flag manipulation).
+
+The flag update logic is governed by the FD (Flag Destination) signal. For basic moves (MOV), flags are preserved. For arithmetic operations, all four flags (Z, N, C, V) are updated. For specialized instructions like SETC, only the Carry flag is affected.
+
+5. ADDRESS CALCULATION AND STACK SUPPORT
+----------------------------------------
+The Execution Unit is also the dedicated Address Generation Unit (AGU). It calculates the Address_8bit based on the instruction context:
+* Direct Addressing (LDD/STD): The address is the Immediate_Value.
+* Indirect Addressing (LDI/STI): The address is the value in register Ra (Data1).
+* Stack Operations:
+    * PUSH: The address is the current Stack Pointer (R3/Data1).
+    * POP / RET: The address is calculated as Stack Pointer + 1. This ensures the memory read occurs at the correct filled stack slot before the hardware increment is finalized.
+
+6. BRANCH AND JUMP EVALUATION
+-----------------------------
+The Unit performs real-time evaluation of jump conditions. It compares the Flag_Selector (selecting Z, N, C, or V) against the calculated Final_Flags. If the condition is met, Taken_Jump is asserted. For the LOOP instruction, the unit specifically checks if the ALU_Result (the decremented counter) is not zero to determine the jump.
+
+7. SUMMARY
+----------
+The Execution Unit provides a robust, hazard-aware environment for instruction processing. Through its distinctive three-tier multiplexer cascade, it integrates data forwarding, immediate handling, and constant injection into a seamless data path. This design ensures that the ELC3030 can handle complex arithmetic and memory addressing within a single pipeline stage, maximizing the efficiency of the 8-bit architecture.

@@ -1,0 +1,74 @@
+========================================================================
+PART X: THE REGISTER FILE - ELC3030 PROCESSOR
+========================================================================
+
+1. REGISTER FILE OVERVIEW
+-------------------------
+The Register File is a fundamental component of the proposed 8-bit ELC3030 processor architecture. It is responsible for storing the processor’s general-purpose registers and providing fast access to operand data required during instruction execution. In this design, the Register File consists of four 8-bit registers labeled R0, R1, R2, and R3. Register R3 is dedicated to act as the Stack Pointer (SP), which is essential for supporting stack-based operations such as PUSH and POP.
+
+The Register File supports two asynchronous read ports and one synchronous write port. This structure allows the processor to read two operands simultaneously while performing a write operation on the rising edge of the clock. The block is designed to operate within a Harvard architecture, multi-cycle finite state machine (FSM) processor.
+
+2. REGISTER FILE INTERFACE DESCRIPTION
+--------------------------------------
+
+2.1 System Signals
+The Register File operates using the following system-level signals:
+* clk: System clock used to synchronize write and stack pointer update operations.
+* rst_n: Active-low reset signal that initializes the register contents to known values.
+
+2.2 Read Ports
+The Register File provides two independent read ports to support dual-operand instructions.
+* rd_addr_a [1:0]: Address input for read port A.
+* rd_data_a [7:0]: Data output corresponding to the selected register at port A.
+* rd_addr_b [1:0]: Address input for read port B.
+* rd_data_b [7:0]: Data output corresponding to the selected register at port B.
+Both read ports operate asynchronously, meaning that any change in the read address is immediately reflected at the output without waiting for a clock edge.
+
+2.3 Write Port
+The Register File includes a single write port used during the write-back phase of instruction execution.
+* wr_en: Write enable signal. When asserted, data is written into the register file.
+* wr_addr [1:0]: Address of the destination register.
+* wr_data [7:0]: Data value to be written into the selected register.
+Write operations are synchronous and occur only on the rising edge of the clock.
+
+2.4 Stack Pointer Control Signals
+To support stack-based instructions, the Register File includes dedicated stack pointer control signals:
+* sp_en: Enables stack pointer update.
+* sp_op: Selects the stack operation type, where logic ‘0’ represents a PUSH operation (stack pointer decrement) and logic ‘1’ represents a POP operation (stack pointer increment).
+
+2.5 Special Outputs
+* sp_out [7:0]: Outputs the current value of the Stack Pointer (R3) for use by other processor blocks.
+* raw_sp [7:0]: Provides a stable copy of the Stack Pointer value.
+
+3. INTERNAL REGISTER ORGANIZATION
+---------------------------------
+The Register File is implemented using an array of four 8-bit registers. The internal register mapping is as follows:
+* R0 -> regs[0]
+* R1 -> regs[1]
+* R2 -> regs[2]
+* R3 -> regs[3] (Stack Pointer)
+Register R3 is reserved exclusively for stack management operations.
+
+4. RESET AND WRITE OPERATION
+----------------------------
+Upon activation of the reset signal (rst_n = 0), the Register File initializes its contents to known values. Registers R0, R1, and R2 are cleared to zero, while the Stack Pointer register (R3) is initialized to 0xFF. This initialization allows the stack to grow downward in memory.
+
+During normal operation, if the write enable signal (wr_en) is asserted, the value present on the write data bus is written into the register specified by the write address on the rising edge of the clock.
+
+5. STACK POINTER UPDATE MECHANISM
+---------------------------------
+The Stack Pointer is updated only when the stack pointer enable signal (sp_en) is asserted. If a stack operation is requested, the value of the Stack Pointer is incremented or decremented based on the value of the stack operation control signal (sp_op). To avoid conflicts, if the Stack Pointer is being explicitly written through the write port in the same cycle, the explicit write operation takes precedence over the automatic stack update.
+
+This mechanism ensures correct behavior during PUSH and POP instructions and prevents unintended register corruption.
+
+6. READ OPERATION AND WRITE-FIRST FORWARDING
+--------------------------------------------
+Read operations in the Register File are asynchronous. To handle read-after-write data hazards, write-first forwarding is implemented. If a register is written and read in the same clock cycle, the read port outputs the newly written data instead of the old stored value. This feature improves processor performance by reducing unnecessary pipeline stalls.
+
+7. STACK POINTER OUTPUTS
+------------------------
+The Stack Pointer value is continuously available through the sp_out and raw_sp output signals. These outputs allow other processor blocks, such as the execution unit or memory unit, to access the stack pointer without interfering with the normal read ports of the Register File.
+
+8. SUMMARY
+----------
+The Register File block provides reliable and efficient storage for the processor’s general-purpose registers. It supports dual asynchronous reads, synchronous writes, stack pointer management, and data hazard mitigation through write-first forwarding. The design fulfills the functional requirements of the ELC3030 processor and integrates seamlessly with the remaining pipeline stages.
